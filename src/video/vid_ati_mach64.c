@@ -585,6 +585,13 @@ void     mach64_ext_writeb(uint32_t addr, uint8_t val, void *priv);
 void     mach64_ext_writew(uint32_t addr, uint16_t val, void *priv);
 void     mach64_ext_writel(uint32_t addr, uint32_t val, void *priv);
 
+static uint8_t  mach64_block_inb(uint16_t port, void *priv);
+static uint16_t mach64_block_inw(uint16_t port, void *priv);
+static uint32_t mach64_block_inl(uint16_t port, void *priv);
+static void     mach64_block_outb(uint16_t port, uint8_t val, void *priv);
+static void     mach64_block_outw(uint16_t port, uint16_t val, void *priv);
+static void     mach64_block_outl(uint16_t port, uint32_t val, void *priv);
+
 #ifdef ENABLE_MACH64_LOG
 int mach64_do_log = ENABLE_MACH64_LOG;
 
@@ -2896,10 +2903,10 @@ mach64_io_remove(mach64_t *mach64)
     io_removehandler(0x03c0, 0x0020, mach64_in, NULL, NULL, mach64_out, NULL, NULL, mach64);
 
     for (uint8_t c = 0; c < 8; c++) {
-        io_removehandler((c * 0x1000) + 0x0000 + io_base, 0x0004, mach64_ext_inb, mach64_ext_inw, mach64_ext_inl, mach64_ext_outb, mach64_ext_outw, mach64_ext_outl, mach64);
-        io_removehandler((c * 0x1000) + 0x0400 + io_base, 0x0004, mach64_ext_inb, mach64_ext_inw, mach64_ext_inl, mach64_ext_outb, mach64_ext_outw, mach64_ext_outl, mach64);
-        io_removehandler((c * 0x1000) + 0x0800 + io_base, 0x0004, mach64_ext_inb, mach64_ext_inw, mach64_ext_inl, mach64_ext_outb, mach64_ext_outw, mach64_ext_outl, mach64);
-        io_removehandler((c * 0x1000) + 0x0c00 + io_base, 0x0004, mach64_ext_inb, mach64_ext_inw, mach64_ext_inl, mach64_ext_outb, mach64_ext_outw, mach64_ext_outl, mach64);
+        io_removehandler((c * 0x1000) + 0x0000 + io_base, 0x0004, mach64_ext_readb, mach64_ext_readw, mach64_ext_readl, mach64_ext_writeb, mach64_ext_writew, mach64_ext_writel, mach64);
+        io_removehandler((c * 0x1000) + 0x0400 + io_base, 0x0004, mach64_ext_readb, mach64_ext_readw, mach64_ext_readl, mach64_ext_writeb, mach64_ext_writew, mach64_ext_writel, mach64);
+        io_removehandler((c * 0x1000) + 0x0800 + io_base, 0x0004, mach64_ext_readb, mach64_ext_readw, mach64_ext_readl, mach64_ext_writeb, mach64_ext_writew, mach64_ext_writel, mach64);
+        io_removehandler((c * 0x1000) + 0x0c00 + io_base, 0x0004, mach64_ext_readb, mach64_ext_readw, mach64_ext_readl, mach64_ext_writeb, mach64_ext_writew, mach64_ext_writel, mach64);
     }
 
     io_removehandler(0x01ce, 0x0002, mach64_in, NULL, NULL, mach64_out, NULL, NULL, mach64);
@@ -2935,10 +2942,10 @@ mach64_io_set(mach64_t *mach64)
 
     if (!mach64->use_block_decoded_io) {
         for (uint8_t c = 0; c < 8; c++) {
-            io_sethandler((c * 0x1000) + 0x0000 + io_base, 0x0004, mach64_ext_inb, mach64_ext_inw, mach64_ext_inl, mach64_ext_outb, mach64_ext_outw, mach64_ext_outl, mach64);
-            io_sethandler((c * 0x1000) + 0x0400 + io_base, 0x0004, mach64_ext_inb, mach64_ext_inw, mach64_ext_inl, mach64_ext_outb, mach64_ext_outw, mach64_ext_outl, mach64);
-            io_sethandler((c * 0x1000) + 0x0800 + io_base, 0x0004, mach64_ext_inb, mach64_ext_inw, mach64_ext_inl, mach64_ext_outb, mach64_ext_outw, mach64_ext_outl, mach64);
-            io_sethandler((c * 0x1000) + 0x0c00 + io_base, 0x0004, mach64_ext_inb, mach64_ext_inw, mach64_ext_inl, mach64_ext_outb, mach64_ext_outw, mach64_ext_outl, mach64);
+            io_sethandler((c * 0x1000) + 0x0000 + io_base, 0x0004, mach64_ext_readb, mach64_ext_readw, mach64_ext_readl, mach64_ext_writeb, mach64_ext_writew, mach64_ext_writel, mach64);
+            io_sethandler((c * 0x1000) + 0x0400 + io_base, 0x0004, mach64_ext_readb, mach64_ext_readw, mach64_ext_readl, mach64_ext_writeb, mach64_ext_writew, mach64_ext_writel, mach64);
+            io_sethandler((c * 0x1000) + 0x0800 + io_base, 0x0004, mach64_ext_readb, mach64_ext_readw, mach64_ext_readl, mach64_ext_writeb, mach64_ext_writew, mach64_ext_writel, mach64);
+            io_sethandler((c * 0x1000) + 0x0c00 + io_base, 0x0004, mach64_ext_readb, mach64_ext_readw, mach64_ext_readl, mach64_ext_writeb, mach64_ext_writew, mach64_ext_writel, mach64);
         }
     }
 

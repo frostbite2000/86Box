@@ -49,6 +49,7 @@
 #define BIOS_ISA_ROM_PATH "roms/video/mach64/M64-1994.VBI"
 #define BIOS_VLB_ROM_PATH "roms/video/mach64/mach64_vlb_vram.bin"
 #define BIOS_ROMVT2_PATH  "roms/video/mach64/atimach64vt2pci.bin"
+#define BIOS_RAGE_PATH    "roms/video/mach64/ati3drageiimach64gtpci.BIN"
 
 #define FIFO_SIZE         65536
 #define FIFO_MASK         (FIFO_SIZE - 1)
@@ -75,7 +76,203 @@ typedef struct fifo_entry_t {
 
 enum {
     MACH64_GX = 0,
-    MACH64_VT2
+    MACH64_VT2,
+    MACH64_RAGE
+};
+
+/* ATI Rage/Mach64 registers */
+enum {
+    ATI_CRTC_H_TOTAL_DISP    = 0x00,
+    ATI_CRTC_H_SYNC_STRT_WID = 0x04,
+    ATI_CRTC_V_TOTAL_DISP    = 0x08,
+    ATI_CRTC_V_SYNC_STRT_WID = 0x0C,
+    ATI_CRTC_VLINE_CRNT_VLINE = 0x10,
+    ATI_CRTC_OFF_PITCH       = 0x14,
+    ATI_CRTC_INT_CNTL        = 0x18,
+    ATI_CRTC_GEN_CNTL        = 0x1C,
+
+    ATI_DSP_CONFIG           = 0x20,
+    ATI_DSP_ON_OFF           = 0x24,
+    ATI_SHARED_CNTL          = 0x28,
+    ATI_OVR_CLR              = 0x40,
+    ATI_OVR_WID_LEFT_RIGHT   = 0x44,
+    ATI_OVR_WID_TOP_BOTTOM   = 0x48,
+    
+    ATI_CUR_CLR0             = 0x60,
+    ATI_CUR_CLR1             = 0x64,
+    ATI_CUR_OFFSET           = 0x68,
+    ATI_CUR_HORZ_VERT_POSN   = 0x6C,
+    ATI_CUR_HORZ_VERT_OFF    = 0x70,
+    
+    ATI_GP_IO                = 0x78,
+    ATI_HW_DEBUG             = 0x7C,
+    ATI_SCRATCH_REG0         = 0x80,
+    ATI_SCRATCH_REG1         = 0x84,
+    
+    ATI_CLOCK_CNTL           = 0x90,
+    
+    ATI_CONFIG_CNTL          = 0xDC,
+    ATI_CONFIG_CHIP_ID       = 0xE0,
+    ATI_CONFIG_STAT0         = 0xE4,
+    ATI_CONFIG_STAT1         = 0xE8,
+    
+    ATI_DST_OFF_PITCH        = 0x100,
+    ATI_DST_X                = 0x104,
+    ATI_DST_Y                = 0x108,
+    ATI_DST_Y_X              = 0x10C,
+    ATI_DST_WIDTH            = 0x110,
+    ATI_DST_HEIGHT           = 0x114,
+    ATI_DST_HEIGHT_WIDTH     = 0x118,
+    ATI_DST_X_WIDTH          = 0x11C,
+    ATI_DST_BRES_LNTH        = 0x120,
+    ATI_DST_BRES_ERR         = 0x124,
+    ATI_DST_BRES_INC         = 0x128,
+    ATI_DST_BRES_DEC         = 0x12C,
+    ATI_DST_CNTL             = 0x130,
+    
+    ATI_SRC_OFF_PITCH        = 0x180,
+    ATI_SRC_X                = 0x184,
+    ATI_SRC_Y                = 0x188,
+    ATI_SRC_Y_X              = 0x18C,
+    ATI_SRC_WIDTH1           = 0x190,
+    ATI_SRC_HEIGHT1          = 0x194,
+    ATI_SRC_HEIGHT1_WIDTH1   = 0x198,
+    ATI_SRC_X_START          = 0x19C,
+    ATI_SRC_Y_START          = 0x1A0,
+    ATI_SRC_Y_X_START        = 0x1A4,
+    ATI_SRC_WIDTH2           = 0x1A8,
+    ATI_SRC_HEIGHT2          = 0x1AC,
+    ATI_SRC_HEIGHT2_WIDTH2   = 0x1B0,
+    ATI_SRC_CNTL             = 0x1B4,
+    
+    ATI_HOST_DATA0           = 0x200,
+    ATI_HOST_DATA1           = 0x204,
+    ATI_HOST_CNTL            = 0x240,
+    
+    ATI_PAT_REG0             = 0x280,
+    ATI_PAT_REG1             = 0x284,
+    ATI_PAT_CNTL             = 0x288,
+    
+    ATI_SC_LEFT              = 0x2A0,
+    ATI_SC_RIGHT             = 0x2A4,
+    ATI_SC_LEFT_RIGHT        = 0x2A8,
+    ATI_SC_TOP               = 0x2AC,
+    ATI_SC_BOTTOM            = 0x2B0,
+    ATI_SC_TOP_BOTTOM        = 0x2B4,
+    
+    ATI_DP_BKGD_CLR          = 0x2C0,
+    ATI_DP_FRGD_CLR          = 0x2C4,
+    ATI_DP_WRITE_MASK        = 0x2C8,
+    ATI_DP_CHAIN_MASK        = 0x2CC,
+    ATI_DP_PIX_WIDTH         = 0x2D0,
+    ATI_DP_MIX               = 0x2D4,
+    ATI_DP_SRC               = 0x2D8,
+    
+    ATI_CLR_CMP_CLR          = 0x300,
+    ATI_CLR_CMP_MASK         = 0x304,
+    ATI_CLR_CMP_CNTL         = 0x308,
+    
+    ATI_FIFO_STAT            = 0x310,
+    ATI_GUI_STAT             = 0x314,
+    
+    ATI_CONTEXT_MASK         = 0x320,
+    ATI_CONTEXT_LOAD_CNTL    = 0x32C,
+    
+    ATI_GUI_TRAJ_CNTL        = 0x330,
+    ATI_BUS_CNTL             = 0x334
+};
+
+/* Mach64 register bitfields */
+#define ATI_CRTC_H_TOTAL      0x000001FF
+#define ATI_CRTC_H_DISP       0x01FF0000
+#define ATI_CRTC_H_DISP_size  16
+
+#define ATI_CRTC_H_SYNC_STRT  0x000000FF
+#define ATI_CRTC_H_SYNC_WID   0x0000FF00
+#define ATI_CRTC_H_SYNC_POL   (1<<15)
+
+#define ATI_CRTC_V_TOTAL      0x000007FF
+#define ATI_CRTC_V_DISP       0x07FF0000
+#define ATI_CRTC_V_DISP_size  16
+
+#define ATI_CRTC_V_SYNC_STRT  0x000007FF
+#define ATI_CRTC_V_SYNC_WID   0x00070000
+#define ATI_CRTC_V_SYNC_POL   (1<<23)
+
+#define ATI_CRTC_VLINE        0x000007FF
+#define ATI_CRTC_VLINE_size   0
+#define ATI_CRTC_CRNT_VLINE   0x07FF0000
+#define ATI_CRTC_CRNT_VLINE_size 16
+
+#define ATI_CRTC_OFFSET       0x000FFFFF
+#define ATI_CRTC_OFFSET_size  0
+#define ATI_CRTC_PITCH        0xF0000000
+#define ATI_CRTC_PITCH_size   28
+
+/* CRTC_INT_CNTL bitfields */
+#define ATI_CRTC_VBLANK       (1<<0)
+#define ATI_CRTC_VBLANK_INT_EN (1<<1)
+#define ATI_CRTC_VBLANK_INT  (1<<2)
+#define ATI_CRTC_VLINE_SYNC   (1<<3)
+#define ATI_CRTC_VLINE_INT_EN (1<<4)
+#define ATI_CRTC_VLINE_INT    (1<<5)
+#define ATI_CRTC_FRAME        (1<<6)
+#define ATI_CRTC_FRAME_INT_EN (1<<7)
+#define ATI_CRTC_FRAME_INT    (1<<8)
+#define ATI_CRTC_VBLANK_INT_AK (1<<9)
+#define ATI_CRTC_VLINE_INT_AK (1<<10)
+#define ATI_CRTC_FRAME_INT_AK (1<<11)
+#define ATI_CRTC_VLINE_CNT    (1<<12)
+
+/* CRTC_GEN_CNTL bitfields */
+#define ATI_CRTC_EXT_DISP_EN  (1<<0)
+#define ATI_CRTC_ENABLE       (1<<1)
+#define ATI_CRTC_HSYNC_DIS    (1<<2)
+#define ATI_CRTC_VSYNC_DIS    (1<<3)
+#define ATI_CRTC_PIX_WIDTH    0x00000700
+#define ATI_CRTC_PIX_WIDTH_size 8
+#define ATI_CRTC_DISPLAY_DIS  (1<<11)
+#define ATI_CRTC_FIFO_LWM     0x000F0000
+#define ATI_CRTC_LOCK_REGS    (1<<20)
+#define ATI_CRTC_SYNC_RST     (1<<24)
+#define ATI_CRTC_DISP_REQ_EN  (1<<25)
+#define ATI_CRTC_VGA_XOVERSCAN (1<<26)
+#define ATI_CRTC_PIX_BY_2_EN  (1<<30)
+#define ATI_CRTC_VGA_128KAP_PAGING     (1<<29)
+
+/* CLOCK_CNTL bitfields */
+#define ATI_CLOCK_SEL         0x0000003F
+#define ATI_CLOCK_SEL_size    0
+#define ATI_CLOCK_DIVIDER     0x00000700
+#define ATI_CLOCK_DIVIDER_size 8
+#define ATI_CLOCK_STROBE      (1<<12)
+#define ATI_CLOCK_PULSE_LEN   0x0000F000
+#define ATI_CLOCK_PULSE_LEN_size 12
+#define ATI_PLL_WR_EN         (1<<16)
+#define ATI_PLL_ADDR          0x007F0000
+#define ATI_PLL_ADDR_size     16
+#define ATI_PLL_DATA          0xFF000000
+#define ATI_PLL_DATA_size     24
+
+/* DAC_CNTL bitfields */
+#define ATI_DAC_8BIT_EN       0x00000100
+#define ATI_DAC_DIRECT        (1<<13)
+#define ATI_DAC_PALETTE_ACC   (1<<14)
+
+/* PLL definitions */
+#define PLL_REF_DIV     0x2
+#define PLL_VCLK_CNTL   0x5
+#define VCLK_POST_DIV   0x6
+#define VCLK0_FB_DIV    0x7
+#define VCLK1_FB_DIV    0x8
+#define VCLK2_FB_DIV    0x9
+#define VCLK3_FB_DIV    0xA
+#define PLL_EXT_CNTL    0xB
+
+/* Enhanced post divider table */
+static const int mach64_post_div[8] = {
+    1, 2, 4, 8,  /* standard post dividers */
+    3, 5, 6, 12  /* alternate post dividers */
 };
 
 typedef struct mach64_t {
@@ -131,6 +328,13 @@ typedef struct mach64_t {
     uint32_t cur_offset;
 
     uint32_t dac_cntl;
+    
+    /* DAC access state variables */
+    uint8_t dac_wr_index;
+    uint8_t dac_rd_index;
+    uint8_t dac_mask;
+    int     comp_index;
+    uint8_t color_buf[3];
 
     uint32_t dp_bkgd_clr;
     uint32_t dp_frgd_clr;
@@ -264,7 +468,7 @@ typedef struct mach64_t {
     int      use_block_decoded_io;
 
     int     pll_addr;
-    uint8_t pll_regs[16];
+    uint8_t pll[16];
     double  pll_freq[4];
 
     uint32_t config_stat0;
@@ -399,6 +603,39 @@ mach64_log(const char *fmt, ...)
 #    define mach64_log(fmt, ...)
 #endif
 
+const char* mach64_get_reg_name(uint32_t reg_num) {
+    switch (reg_num) {
+        case ATI_CRTC_H_TOTAL_DISP: return "CRTC_H_TOTAL_DISP";
+        case ATI_CRTC_H_SYNC_STRT_WID: return "CRTC_H_SYNC_STRT_WID";
+        case ATI_CRTC_V_TOTAL_DISP: return "CRTC_V_TOTAL_DISP";
+        case ATI_CRTC_V_SYNC_STRT_WID: return "CRTC_V_SYNC_STRT_WID";
+        case ATI_CRTC_VLINE_CRNT_VLINE: return "CRTC_VLINE_CRNT_VLINE";
+        case ATI_CRTC_OFF_PITCH: return "CRTC_OFF_PITCH";
+        case ATI_CRTC_INT_CNTL: return "CRTC_INT_CNTL";
+        case ATI_CRTC_GEN_CNTL: return "CRTC_GEN_CNTL";
+        case ATI_DSP_CONFIG: return "DSP_CONFIG";
+        case ATI_DSP_ON_OFF: return "DSP_ON_OFF";
+        case ATI_OVR_CLR: return "OVR_CLR";
+        case ATI_OVR_WID_LEFT_RIGHT: return "OVR_WID_LEFT_RIGHT";
+        case ATI_OVR_WID_TOP_BOTTOM: return "OVR_WID_TOP_BOTTOM";
+        case ATI_CUR_CLR0: return "CUR_CLR0";
+        case ATI_CUR_CLR1: return "CUR_CLR1";
+        case ATI_CUR_OFFSET: return "CUR_OFFSET";
+        case ATI_CUR_HORZ_VERT_POSN: return "CUR_HORZ_VERT_POSN";
+        case ATI_CUR_HORZ_VERT_OFF: return "CUR_HORZ_VERT_OFF";
+        case ATI_GP_IO: return "GP_IO";
+        case ATI_HW_DEBUG: return "HW_DEBUG";
+        case ATI_SCRATCH_REG0: return "SCRATCH_REG0";
+        case ATI_SCRATCH_REG1: return "SCRATCH_REG1";
+        case ATI_CLOCK_CNTL: return "CLOCK_CNTL";
+        case ATI_BUS_CNTL: return "BUS_CNTL";
+        case ATI_CONFIG_CNTL: return "CONFIG_CNTL";
+        case ATI_CONFIG_CHIP_ID: return "CONFIG_CHIP_ID";
+        case ATI_CONFIG_STAT0: return "CONFIG_STAT0";
+        default: return "Unknown Register";
+    }
+}
+
 void
 mach64_out(uint16_t addr, uint8_t val, void *priv)
 {
@@ -523,12 +760,27 @@ mach64_recalctimings(svga_t *svga)
                                          ((mach64->crtc_h_sync_strt_wid >> 16) & 31) - 1) & 63;
         svga->vsyncstart               = (mach64->crtc_v_sync_strt_wid & 2047) + 1;
         svga->rowoffset                = (mach64->crtc_off_pitch >> 22);
-        svga->clock                    = (cpuclock * (double) (1ULL << 32)) / ics2595_getclock(svga->clock_gen);
-        svga->ma_latch                 = (mach64->crtc_off_pitch & 0x1fffff) * 2;
+        
+        /* Improved clock and PLL calculation for Rage */
+        if (mach64->type == MACH64_RAGE) {
+            int clock_sel = (mach64->clock_cntl >> 8) & 3;
+            int fb_div = mach64->pll[VCLK0_FB_DIV + clock_sel];
+            int ref_div = mach64->pll[PLL_REF_DIV];
+            int post_div_idx = ((mach64->pll[PLL_EXT_CNTL] >> (clock_sel + 2)) & 4) |
+                              ((mach64->pll[VCLK_POST_DIV] >> (clock_sel * 2)) & 3);
+                              
+            double freq = 14318184.0 * 2.0 * fb_div / (ref_div * mach64_post_div[post_div_idx]);
+            svga->clock = (int)freq;
+        } else {
+            /* Original clock calculation */
+            svga->clock = (cpuclock * (double) (1ULL << 32)) / ics2595_getclock(svga->clock_gen);
+        }
+        
+        svga->ma_latch = (mach64->crtc_off_pitch & 0x1fffff) * 2;
         svga->linedbl = svga->rowcount = 0;
-        svga->split                    = 0xffffff;
-        svga->vblankstart              = svga->dispend;
-        svga->rowcount                 = mach64->crtc_gen_cntl & 1;
+        svga->split = 0xffffff;
+        svga->vblankstart = svga->dispend;
+        svga->rowcount = mach64->crtc_gen_cntl & 1;
         svga->rowoffset <<= 1;
         if (mach64->type == MACH64_GX)
             ati68860_ramdac_set_render(svga->ramdac, svga);
@@ -627,7 +879,7 @@ mach64_updatemapping(mach64_t *mach64)
         if (mach64->type == MACH64_GX) {
             if ((mach64->config_cntl & 3) == 2) {
                 /*8 MB aperture*/
-                mach64_log("Mach64 linear aperture=%08x, cfgcntl=%x, mapping=%x, VGAAP=%x.\n", mach64->linear_base + ((8 << 20) - 0x4000), mach64->config_cntl & 3, svga->gdcreg[6] & 0xc, mach64->config_cntl & 4);
+                mach64_log("Mach64 linear aperture=%08x, cfgcntl=%x, mapping=%x\n", mach64->linear_base + ((8 << 20) - 0x4000), mach64->config_cntl & 3, svga->gdcreg[6] & 0xc);
                 mem_mapping_set_addr(&mach64->linear_mapping, mach64->linear_base, (8 << 20) - 0x4000);
                 mem_mapping_set_addr(&mach64->mmio_linear_mapping, mach64->linear_base + ((8 << 20) - 0x4000), 0x4000);
             } else {
@@ -746,7 +998,7 @@ mach64_accel_write_fifo(mach64_t *mach64, uint32_t addr, uint8_t val)
         case 0x11e:
         case 0x11f:
             WRITE8(addr, mach64->dst_height_width, val);
-            fallthrough;
+            break;
         case 0x113:
             if (((addr & 0x3ff) == 0x11b || (addr & 0x3ff) == 0x11f || (addr & 0x3ff) == 0x113) && !(val & 0x80)) {
                 mach64_start_fill(mach64);
@@ -1008,6 +1260,7 @@ mach64_accel_write_fifo(mach64_t *mach64, uint32_t addr, uint8_t val)
         case 0x2cb:
             WRITE8(addr, mach64->write_mask, val);
             break;
+
         case 0x2cc:
         case 0x2cd:
         case 0x2ce:
@@ -1419,7 +1672,15 @@ mach64_start_fill(mach64_t *mach64)
     mach64->accel.poly_draw = 0;
 
     mach64->accel.busy = 1;
-    mach64_log("mach64_start_fill : dst %i, %i  src %i, %i  size %i, %i  src pitch %i offset %X  dst pitch %i offset %X  scissor %i %i %i %i  src_fg %i  mix %02X %02X\n", mach64->accel.dst_x_start, mach64->accel.dst_y_start, mach64->accel.src_x_start, mach64->accel.src_y_start, mach64->accel.dst_width, mach64->accel.dst_height, mach64->accel.src_pitch, mach64->accel.src_offset, mach64->accel.dst_pitch, mach64->accel.dst_offset, mach64->accel.sc_left, mach64->accel.sc_right, mach64->accel.sc_top, mach64->accel.sc_bottom, mach64->accel.source_fg, mach64->accel.mix_fg, mach64->accel.mix_bg);
+    mach64_log("mach64_start_fill : dst %i, %i  src %i, %i  size %i, %i  src pitch %i offset %X  dst pitch %i offset %X  scissor %i %i %i %i  src_fg %i  mix %02X %02X\n", mach64->accel.dst_x_start, mach64->accel.dst_y_start,
+               mach64->accel.src_x_start, mach64->accel.src_y_start,
+               mach64->accel.dst_width, mach64->accel.dst_height,
+               mach64->accel.src_pitch, mach64->accel.src_offset,
+               mach64->accel.dst_pitch, mach64->accel.dst_offset,
+               mach64->accel.sc_left, mach64->accel.sc_right,
+               mach64->accel.sc_top, mach64->accel.sc_bottom,
+               mach64->accel.source_fg,
+               mach64->accel.mix_fg, mach64->accel.mix_bg);
 
     mach64->accel.op = OP_RECT;
 }
@@ -2247,10 +2508,7 @@ mach64_load_context(mach64_t *mach64)
     }
 }
 
-#define PLL_REF_DIV   0x2
-#define VCLK_POST_DIV 0x6
-#define VCLK0_FB_DIV  0x7
-
+/* Improved PLL and clock handling based on DingusPPC */
 static void
 pll_write(mach64_t *mach64, uint32_t addr, uint8_t val)
 {
@@ -2261,16 +2519,23 @@ pll_write(mach64_t *mach64, uint32_t addr, uint8_t val)
             mach64->pll_addr = (val >> 2) & 0xf;
             break;
         case 2: /*Data*/
-            mach64->pll_regs[mach64->pll_addr] = val;
+            mach64->pll[mach64->pll_addr] = val;
             mach64_log("pll_write %02x,%02x\n", mach64->pll_addr, val);
 
             for (uint8_t c = 0; c < 4; c++) {
-                double m = (double) mach64->pll_regs[PLL_REF_DIV];
-                double n = (double) mach64->pll_regs[VCLK0_FB_DIV + c];
+                double m = (double) mach64->pll[PLL_REF_DIV];
+                double n = (double) mach64->pll[VCLK0_FB_DIV + c];
                 double r = 14318184.0;
-                double p = (double) (1 << ((mach64->pll_regs[VCLK_POST_DIV] >> (c * 2)) & 3));
+                double p = (double) (1 << ((mach64->pll[VCLK_POST_DIV] >> (c * 2)) & 3));
 
-                mach64_log("PLLfreq %i = %g  %g m=%02x n=%02x p=%02x\n", c, (2.0 * r * n) / (m * p), p, mach64->pll_regs[PLL_REF_DIV], mach64->pll_regs[VCLK0_FB_DIV + c], mach64->pll_regs[VCLK_POST_DIV]);
+                if (mach64->type == MACH64_RAGE) {
+                    /* Enhanced PLL handling for ATI Rage */
+                    int post_div_idx = ((mach64->pll[PLL_EXT_CNTL] >> (c + 2)) & 4) |
+                                       ((mach64->pll[VCLK_POST_DIV] >> (c * 2)) & 3);
+                    p = (double) mach64_post_div[post_div_idx];
+                }
+
+                mach64_log("PLLfreq %i = %g  %g m=%02x n=%02x p=%02x\n", c, (2.0 * r * n) / (m * p), p, mach64->pll[PLL_REF_DIV], mach64->pll[VCLK0_FB_DIV + c], mach64->pll[VCLK_POST_DIV]);
                 mach64->pll_freq[c] = (2.0 * r * n) / (m * p);
                 mach64_log(" %g\n", mach64->pll_freq[c]);
             }
@@ -2281,7 +2546,130 @@ pll_write(mach64_t *mach64, uint32_t addr, uint8_t val)
     }
 }
 
-#define OVERLAY_EN (1 << 30)
+#define CLAMP(x)                      \
+    do {                              \
+        if ((x) & ~0xff)              \
+            x = ((x) < 0) ? 0 : 0xff; \
+    } while (0)
+
+#define DECODE_ARGB1555()                                            \
+    do {                                                             \
+        for (x = 0; x < mach64->svga.overlay_latch.cur_xsize; x++) { \
+            uint16_t dat = ((uint16_t *) src)[x];                    \
+                                                                     \
+            int b = dat & 0x1f;                                      \
+            int g = (dat >> 5) & 0x1f;                               \
+            int r = (dat >> 10) & 0x1f;                              \
+                                                                     \
+            b = (b << 3) | (b >> 2);                                 \
+            g = (g << 3) | (g >> 2);                                 \
+            r = (r << 3) | (r >> 2);                                 \
+                                                                     \
+            mach64->overlay_dat[x] = (r << 16) | (g << 8) | b;       \
+        }                                                            \
+    } while (0)
+
+#define DECODE_RGB565()                                              \
+    do {                                                             \
+        for (x = 0; x < mach64->svga.overlay_latch.cur_xsize; x++) { \
+            uint16_t dat = ((uint16_t *) src)[x];                    \
+                                                                     \
+            int b = dat & 0x1f;                                      \
+            int g = (dat >> 5) & 0x3f;                               \
+            int r = (dat >> 11) & 0x1f;                              \
+                                                                     \
+            b = (b << 3) | (b >> 2);                                 \
+            g = (g << 2) | (g >> 4);                                 \
+            r = (r << 3) | (r >> 2);                                 \
+                                                                     \
+            mach64->overlay_dat[x] = (r << 16) | (g << 8) | b;       \
+        }                                                            \
+    } while (0)
+
+#define DECODE_ARGB8888()                                            \
+    do {                                                             \
+        for (x = 0; x < mach64->svga.overlay_latch.cur_xsize; x++) { \
+            int b = src[0];                                          \
+            int g = src[1];                                          \
+            int r = src[2];                                          \
+            src += 4;                                                \
+                                                                     \
+            mach64->overlay_dat[x] = (r << 16) | (g << 8) | b;       \
+        }                                                            \
+    } while (0)
+
+#define DECODE_VYUY422()                                                \
+    do {                                                                \
+        for (x = 0; x < mach64->svga.overlay_latch.cur_xsize; x += 2) { \
+            uint8_t y1, y2;                                             \
+            int8_t  u, v;                                               \
+            int     dR, dG, dB;                                         \
+            int     r, g, b;                                            \
+                                                                        \
+            y1 = src[0];                                                \
+            u  = src[1] - 0x80;                                         \
+            y2 = src[2];                                                \
+            v  = src[3] - 0x80;                                         \
+            src += 4;                                                   \
+                                                                        \
+            dR = (359 * v) >> 8;                                        \
+            dG = (88 * u + 183 * v) >> 8;                               \
+            dB = (453 * u) >> 8;                                        \
+                                                                        \
+            r = y1 + dR;                                                \
+            CLAMP(r);                                                   \
+            g = y1 - dG;                                                \
+            CLAMP(g);                                                   \
+            b = y1 + dB;                                                \
+            CLAMP(b);                                                   \
+            mach64->overlay_dat[x] = (r << 16) | (g << 8) | b;          \
+                                                                        \
+            r = y2 + dR;                                                \
+            CLAMP(r);                                                   \
+            g = y2 - dG;                                                \
+            CLAMP(g);                                                   \
+            b = y2 + dB;                                                \
+            CLAMP(b);                                                   \
+            mach64->overlay_dat[x + 1] = (r << 16) | (g << 8) | b;      \
+        }                                                               \
+    } while (0)
+
+#define DECODE_YVYU422()                                                \
+    do {                                                                \
+        for (x = 0; x < mach64->svga.overlay_latch.cur_xsize; x += 2) { \
+            uint8_t y1, y2;                                             \
+            int8_t  u, v;                                               \
+            int     dR, dG, dB;                                         \
+            int     r, g, b;                                            \
+                                                                        \
+            u  = src[0] - 0x80;                                         \
+            y1 = src[1];                                                \
+            v  = src[2] - 0x80;                                         \
+            y2 = src[3];                                                \
+            src += 4;                                                   \
+                                                                        \
+            dR = (359 * v) >> 8;                                        \
+            dG = (88 * u + 183 * v) >> 8;                               \
+            dB = (453 * u) >> 8;                                        \
+                                                                        \
+            r = y1 + dR;                                                \
+            CLAMP(r);                                                   \
+            g = y1 - dG;                                                \
+            CLAMP(g);                                                   \
+            b = y1 + dB;                                                \
+            CLAMP(b);                                                   \
+            mach64->overlay_dat[x] = (r << 16) | (g << 8) | b;          \
+                                                                        \
+            r = y2 + dR;                                                \
+            CLAMP(r);                                                   \
+            g = y2 - dG;                                                \
+            CLAMP(g);                                                   \
+            b = y2 + dB;                                                \
+            CLAMP(b);                                                   \
+            mach64->overlay_dat[x + 1] = (r << 16) | (g << 8) | b;      \
+        }                                                               \
+    } while (0)
+
 static void
 mach64_vblank_start(svga_t *svga)
 {
@@ -2300,10 +2688,351 @@ mach64_vblank_start(svga_t *svga)
     svga->overlay.addr  = mach64->buf_offset[0] & 0x3ffff8;
     svga->overlay.pitch = mach64->buf_pitch[0] & 0xfff;
 
-    svga->overlay.ena = (mach64->overlay_scale_cntl & OVERLAY_EN) && (overlay_cmp_mix != 1);
+    svga->overlay.ena = (mach64->overlay_scale_cntl & (1 << 30)) && (overlay_cmp_mix != 1);
 
     mach64->overlay_v_acc = 0;
     mach64->scaler_update = 1;
+}
+
+void
+mach64_overlay_draw(svga_t *svga, int displine)
+{
+    mach64_t *mach64 = (mach64_t *) svga->priv;
+    int       x;
+    int       h_acc = 0;
+    int       h_max = (mach64->scaler_height_width >> 16) & 0x3ff;
+    int       h_inc = mach64->overlay_scale_inc >> 16;
+    int       v_max = mach64->scaler_height_width & 0x3ff;
+    int       v_inc = mach64->overlay_scale_inc & 0xffff;
+    uint32_t *p;
+    uint8_t  *src   = &svga->vram[svga->overlay.addr];
+    int       old_y = mach64->overlay_v_acc;
+    int       y_diff;
+    int       video_key_fn    = mach64->overlay_key_cntl & 5;
+    int       graphics_key_fn = (mach64->overlay_key_cntl >> 4) & 5;
+    int       overlay_cmp_mix = (mach64->overlay_key_cntl >> 8) & 0xf;
+
+    p = &buffer32->line[displine][svga->x_add + mach64->svga.overlay_latch.x];
+
+    if (mach64->scaler_update) {
+        switch (mach64->scaler_format) {
+            case 0x3:
+                DECODE_ARGB1555();
+                break;
+            case 0x4:
+                DECODE_RGB565();
+                break;
+            case 0x6:
+                DECODE_ARGB8888();
+                break;
+            case 0xb:
+                DECODE_VYUY422();
+                break;
+            case 0xc:
+                DECODE_YVYU422();
+                break;
+
+            default:
+                mach64_log("Unknown Mach64 scaler format %x\n", mach64->scaler_format);
+                /*Fill buffer with something recognisably wrong*/
+                for (x = 0; x < mach64->svga.overlay_latch.cur_xsize; x++)
+                    mach64->overlay_dat[x] = 0xff00ff;
+                break;
+        }
+    }
+
+    if (overlay_cmp_mix == 2) {
+        for (x = 0; x < mach64->svga.overlay_latch.cur_xsize; x++) {
+            int h = h_acc >> 12;
+
+            p[x] = mach64->overlay_dat[h];
+
+            h_acc += h_inc;
+            if (h_acc > (h_max << 12))
+                h_acc = (h_max << 12);
+        }
+    } else {
+        for (x = 0; x < mach64->svga.overlay_latch.cur_xsize; x++) {
+            int h         = h_acc >> 12;
+            int gr_cmp    = 0;
+            int vid_cmp   = 0;
+            int use_video = 0;
+
+            switch (video_key_fn) {
+                case 0:
+                    vid_cmp = 0;
+                    break;
+                case 1:
+                    vid_cmp = 1;
+                    break;
+                case 4:
+                    vid_cmp = ((mach64->overlay_dat[h] ^ mach64->overlay_video_key_clr) & mach64->overlay_video_key_msk);
+                    break;
+                case 5:
+                    vid_cmp = !((mach64->overlay_dat[h] ^ mach64->overlay_video_key_clr) & mach64->overlay_video_key_msk);
+                    break;
+
+                default:
+                    break;
+            }
+            switch (graphics_key_fn) {
+                case 0:
+                    gr_cmp = 0;
+                    break;
+                case 1:
+                    gr_cmp = 1;
+                    break;
+                case 4:
+                    gr_cmp = (((p[x]) ^ mach64->overlay_graphics_key_clr) & mach64->overlay_graphics_key_msk & 0xffffff);
+                    break;
+                case 5:
+                    gr_cmp = !(((p[x]) ^ mach64->overlay_graphics_key_clr) & mach64->overlay_graphics_key_msk & 0xffffff);
+                    break;
+
+                default:
+                    break;
+            }
+            vid_cmp = vid_cmp ? -1 : 0;
+            gr_cmp  = gr_cmp ? -1 : 0;
+
+            switch (overlay_cmp_mix) {
+                case 0x0:
+                    use_video = gr_cmp;
+                    break;
+                case 0x1:
+                    use_video = 0;
+                    break;
+                case 0x2:
+                    use_video = ~0;
+                    break;
+                case 0x3:
+                    use_video = ~gr_cmp;
+                    break;
+                case 0x4:
+                    use_video = ~vid_cmp;
+                    break;
+                case 0x5:
+                    use_video = gr_cmp ^ vid_cmp;
+                    break;
+                case 0x6:
+                    use_video = ~gr_cmp ^ vid_cmp;
+                    break;
+                case 0x7:
+                    use_video = vid_cmp;
+                    break;
+                case 0x8:
+                    use_video = ~gr_cmp | ~vid_cmp;
+                    break;
+                case 0x9:
+                    use_video = gr_cmp | ~vid_cmp;
+                    break;
+                case 0xa:
+                    use_video = ~gr_cmp | vid_cmp;
+                    break;
+                case 0xb:
+                    use_video = gr_cmp | vid_cmp;
+                    break;
+                case 0xc:
+                    use_video = gr_cmp & vid_cmp;
+                    break;
+                case 0xd:
+                    use_video = ~gr_cmp & vid_cmp;
+                    break;
+                case 0xe:
+                    use_video = gr_cmp & ~vid_cmp;
+                    break;
+                case 0xf:
+                    use_video = ~gr_cmp & ~vid_cmp;
+                    break;
+
+                default:
+                    break;
+            }
+
+            if (use_video)
+                p[x] = mach64->overlay_dat[h];
+
+            h_acc += h_inc;
+            if (h_acc > (h_max << 12))
+                h_acc = (h_max << 12);
+        }
+    }
+
+    mach64->overlay_v_acc += v_inc;
+    if (mach64->overlay_v_acc > (v_max << 12))
+        mach64->overlay_v_acc = v_max << 12;
+
+    y_diff = (mach64->overlay_v_acc >> 12) - (old_y >> 12);
+
+    if (mach64->scaler_format == 6)
+        svga->overlay.addr += svga->overlay.pitch * 4 * y_diff;
+    else
+        svga->overlay.addr += svga->overlay.pitch * 2 * y_diff;
+
+    mach64->scaler_update = y_diff;
+}
+
+static void
+mach64_io_remove(mach64_t *mach64)
+{
+    uint16_t io_base = 0x02ec;
+
+    switch (mach64->io_base) {
+        default:
+        case 0:
+            io_base = 0x02ec;
+            break;
+        case 1:
+            io_base = 0x01cc;
+            break;
+        case 2:
+            io_base = 0x01c8;
+            break;
+        case 3:
+            fatal("Attempting to use the reserved value for I/O Base\n");
+            return;
+    }
+
+    io_removehandler(0x03c0, 0x0020, mach64_in, NULL, NULL, mach64_out, NULL, NULL, mach64);
+
+    for (uint8_t c = 0; c < 8; c++) {
+        io_removehandler((c * 0x1000) + 0x0000 + io_base, 0x0004, mach64_ext_inb, mach64_ext_inw, mach64_ext_inl, mach64_ext_outb, mach64_ext_outw, mach64_ext_outl, mach64);
+        io_removehandler((c * 0x1000) + 0x0400 + io_base, 0x0004, mach64_ext_inb, mach64_ext_inw, mach64_ext_inl, mach64_ext_outb, mach64_ext_outw, mach64_ext_outl, mach64);
+        io_removehandler((c * 0x1000) + 0x0800 + io_base, 0x0004, mach64_ext_inb, mach64_ext_inw, mach64_ext_inl, mach64_ext_outb, mach64_ext_outw, mach64_ext_outl, mach64);
+        io_removehandler((c * 0x1000) + 0x0c00 + io_base, 0x0004, mach64_ext_inb, mach64_ext_inw, mach64_ext_inl, mach64_ext_outb, mach64_ext_outw, mach64_ext_outl, mach64);
+    }
+
+    io_removehandler(0x01ce, 0x0002, mach64_in, NULL, NULL, mach64_out, NULL, NULL, mach64);
+
+    if (mach64->block_decoded_io && mach64->block_decoded_io < 0x10000)
+        io_removehandler(mach64->block_decoded_io, 0x0400, mach64_block_inb, mach64_block_inw, mach64_block_inl, mach64_block_outb, mach64_block_outw, mach64_block_outl, mach64);
+}
+
+static void
+mach64_io_set(mach64_t *mach64)
+{
+    uint16_t io_base = 0x02ec;
+
+    mach64_io_remove(mach64);
+
+    switch (mach64->io_base) {
+        default:
+        case 0:
+            io_base = 0x02ec;
+            break;
+        case 1:
+            io_base = 0x01cc;
+            break;
+        case 2:
+            io_base = 0x01c8;
+            break;
+        case 3:
+            fatal("Attempting to use the reserved value for I/O Base\n");
+            return;
+    }
+
+    io_sethandler(0x03c0, 0x0020, mach64_in, NULL, NULL, mach64_out, NULL, NULL, mach64);
+
+    if (!mach64->use_block_decoded_io) {
+        for (uint8_t c = 0; c < 8; c++) {
+            io_sethandler((c * 0x1000) + 0x0000 + io_base, 0x0004, mach64_ext_inb, mach64_ext_inw, mach64_ext_inl, mach64_ext_outb, mach64_ext_outw, mach64_ext_outl, mach64);
+            io_sethandler((c * 0x1000) + 0x0400 + io_base, 0x0004, mach64_ext_inb, mach64_ext_inw, mach64_ext_inl, mach64_ext_outb, mach64_ext_outw, mach64_ext_outl, mach64);
+            io_sethandler((c * 0x1000) + 0x0800 + io_base, 0x0004, mach64_ext_inb, mach64_ext_inw, mach64_ext_inl, mach64_ext_outb, mach64_ext_outw, mach64_ext_outl, mach64);
+            io_sethandler((c * 0x1000) + 0x0c00 + io_base, 0x0004, mach64_ext_inb, mach64_ext_inw, mach64_ext_inl, mach64_ext_outb, mach64_ext_outw, mach64_ext_outl, mach64);
+        }
+    }
+
+    io_sethandler(0x01ce, 0x0002, mach64_in, NULL, NULL, mach64_out, NULL, NULL, mach64);
+
+    if (mach64->use_block_decoded_io && mach64->block_decoded_io && mach64->block_decoded_io < 0x10000)
+        io_sethandler(mach64->block_decoded_io, 0x0400, mach64_block_inb, mach64_block_inw, mach64_block_inl, mach64_block_outb, mach64_block_outw, mach64_block_outl, mach64);
+}
+
+static uint8_t
+mach64_read_linear(uint32_t addr, void *priv)
+{
+    const svga_t *svga = (svga_t *) priv;
+
+    cycles -= svga->monitor->mon_video_timing_read_b;
+
+    addr &= svga->decode_mask;
+    if (addr >= svga->vram_max)
+        return 0xff;
+
+    return svga->vram[addr & svga->vram_mask];
+}
+
+static uint16_t
+mach64_readw_linear(uint32_t addr, void *priv)
+{
+    svga_t *svga = (svga_t *) priv;
+
+    cycles -= svga->monitor->mon_video_timing_read_w;
+
+    addr &= svga->decode_mask;
+    if (addr >= svga->vram_max)
+        return 0xffff;
+
+    return *(uint16_t *) &svga->vram[addr & svga->vram_mask];
+}
+
+static uint32_t
+mach64_readl_linear(uint32_t addr, void *priv)
+{
+    svga_t *svga = (svga_t *) priv;
+
+    cycles -= svga->monitor->mon_video_timing_read_l;
+
+    addr &= svga->decode_mask;
+    if (addr >= svga->vram_max)
+        return 0xffffffff;
+
+    return *(uint32_t *) &svga->vram[addr & svga->vram_mask];
+}
+
+static void
+mach64_write_linear(uint32_t addr, uint8_t val, void *priv)
+{
+    svga_t *svga = (svga_t *) priv;
+
+    cycles -= svga->monitor->mon_video_timing_write_b;
+
+    addr &= svga->decode_mask;
+    if (addr >= svga->vram_max)
+        return;
+    addr &= svga->vram_mask;
+    svga->changedvram[addr >> 12] = svga->monitor->mon_changeframecount;
+    svga->vram[addr]              = val;
+}
+
+static void
+mach64_writew_linear(uint32_t addr, uint16_t val, void *priv)
+{
+    svga_t *svga = (svga_t *) priv;
+
+    cycles -= svga->monitor->mon_video_timing_write_w;
+
+    addr &= svga->decode_mask;
+    if (addr >= svga->vram_max)
+        return;
+    addr &= svga->vram_mask;
+    svga->changedvram[addr >> 12]   = svga->monitor->mon_changeframecount;
+    *(uint16_t *) &svga->vram[addr] = val;
+}
+
+static void
+mach64_writel_linear(uint32_t addr, uint32_t val, void *priv)
+{
+    svga_t *svga = (svga_t *) priv;
+
+    cycles -= svga->monitor->mon_video_timing_write_l;
+
+    addr &= svga->decode_mask;
+    if (addr >= svga->vram_max)
+        return;
+    addr &= svga->vram_mask;
+    svga->changedvram[addr >> 12]   = svga->monitor->mon_changeframecount;
+    *(uint32_t *) &svga->vram[addr] = val;
 }
 
 uint8_t
@@ -2535,7 +3264,7 @@ mach64_ext_readb(uint32_t addr, void *priv)
 
             case 0xc7:
                 READ8(addr, mach64->dac_cntl);
-                if (mach64->type == MACH64_VT2) {
+                if (mach64->type == MACH64_VT2 || mach64->type == MACH64_RAGE) {
                     ret &= 0xf9;
                     if (i2c_gpio_get_scl(mach64->i2c))
                         ret |= 0x04;
@@ -3189,7 +3918,7 @@ mach64_ext_writeb(uint32_t addr, uint8_t val, void *priv)
             case 0x62:
             case 0x63:
                 WRITE8(addr, mach64->cur_clr0, val);
-                if (mach64->type == MACH64_VT2)
+                if (mach64->type == MACH64_VT2 || mach64->type == MACH64_RAGE)
                     ati68860_ramdac_set_pallook(mach64->svga.ramdac, 0, makecol32((mach64->cur_clr0 >> 24) & 0xff, (mach64->cur_clr0 >> 16) & 0xff, (mach64->cur_clr0 >> 8) & 0xff));
                 break;
             case 0x64:
@@ -3197,7 +3926,7 @@ mach64_ext_writeb(uint32_t addr, uint8_t val, void *priv)
             case 0x66:
             case 0x67:
                 WRITE8(addr, mach64->cur_clr1, val);
-                if (mach64->type == MACH64_VT2)
+                if (mach64->type == MACH64_VT2 || mach64->type == MACH64_RAGE)
                     ati68860_ramdac_set_pallook(mach64->svga.ramdac, 1, makecol32((mach64->cur_clr1 >> 24) & 0xff, (mach64->cur_clr1 >> 16) & 0xff, (mach64->cur_clr1 >> 8) & 0xff));
                 break;
             case 0x68:
@@ -3905,471 +4634,6 @@ mach64_readl(uint32_t addr, void *priv)
     return ret;
 }
 
-#define CLAMP(x)                      \
-    do {                              \
-        if ((x) & ~0xff)              \
-            x = ((x) < 0) ? 0 : 0xff; \
-    } while (0)
-
-#define DECODE_ARGB1555()                                            \
-    do {                                                             \
-        for (x = 0; x < mach64->svga.overlay_latch.cur_xsize; x++) { \
-            uint16_t dat = ((uint16_t *) src)[x];                    \
-                                                                     \
-            int b = dat & 0x1f;                                      \
-            int g = (dat >> 5) & 0x1f;                               \
-            int r = (dat >> 10) & 0x1f;                              \
-                                                                     \
-            b = (b << 3) | (b >> 2);                                 \
-            g = (g << 3) | (g >> 2);                                 \
-            r = (r << 3) | (r >> 2);                                 \
-                                                                     \
-            mach64->overlay_dat[x] = (r << 16) | (g << 8) | b;       \
-        }                                                            \
-    } while (0)
-
-#define DECODE_RGB565()                                              \
-    do {                                                             \
-        for (x = 0; x < mach64->svga.overlay_latch.cur_xsize; x++) { \
-            uint16_t dat = ((uint16_t *) src)[x];                    \
-                                                                     \
-            int b = dat & 0x1f;                                      \
-            int g = (dat >> 5) & 0x3f;                               \
-            int r = (dat >> 11) & 0x1f;                              \
-                                                                     \
-            b = (b << 3) | (b >> 2);                                 \
-            g = (g << 2) | (g >> 4);                                 \
-            r = (r << 3) | (r >> 2);                                 \
-                                                                     \
-            mach64->overlay_dat[x] = (r << 16) | (g << 8) | b;       \
-        }                                                            \
-    } while (0)
-
-#define DECODE_ARGB8888()                                            \
-    do {                                                             \
-        for (x = 0; x < mach64->svga.overlay_latch.cur_xsize; x++) { \
-            int b = src[0];                                          \
-            int g = src[1];                                          \
-            int r = src[2];                                          \
-            src += 4;                                                \
-                                                                     \
-            mach64->overlay_dat[x] = (r << 16) | (g << 8) | b;       \
-        }                                                            \
-    } while (0)
-
-#define DECODE_VYUY422()                                                \
-    do {                                                                \
-        for (x = 0; x < mach64->svga.overlay_latch.cur_xsize; x += 2) { \
-            uint8_t y1, y2;                                             \
-            int8_t  u, v;                                               \
-            int     dR, dG, dB;                                         \
-            int     r, g, b;                                            \
-                                                                        \
-            y1 = src[0];                                                \
-            u  = src[1] - 0x80;                                         \
-            y2 = src[2];                                                \
-            v  = src[3] - 0x80;                                         \
-            src += 4;                                                   \
-                                                                        \
-            dR = (359 * v) >> 8;                                        \
-            dG = (88 * u + 183 * v) >> 8;                               \
-            dB = (453 * u) >> 8;                                        \
-                                                                        \
-            r = y1 + dR;                                                \
-            CLAMP(r);                                                   \
-            g = y1 - dG;                                                \
-            CLAMP(g);                                                   \
-            b = y1 + dB;                                                \
-            CLAMP(b);                                                   \
-            mach64->overlay_dat[x] = (r << 16) | (g << 8) | b;          \
-                                                                        \
-            r = y2 + dR;                                                \
-            CLAMP(r);                                                   \
-            g = y2 - dG;                                                \
-            CLAMP(g);                                                   \
-            b = y2 + dB;                                                \
-            CLAMP(b);                                                   \
-            mach64->overlay_dat[x + 1] = (r << 16) | (g << 8) | b;      \
-        }                                                               \
-    } while (0)
-
-#define DECODE_YVYU422()                                                \
-    do {                                                                \
-        for (x = 0; x < mach64->svga.overlay_latch.cur_xsize; x += 2) { \
-            uint8_t y1, y2;                                             \
-            int8_t  u, v;                                               \
-            int     dR, dG, dB;                                         \
-            int     r, g, b;                                            \
-                                                                        \
-            u  = src[0] - 0x80;                                         \
-            y1 = src[1];                                                \
-            v  = src[2] - 0x80;                                         \
-            y2 = src[3];                                                \
-            src += 4;                                                   \
-                                                                        \
-            dR = (359 * v) >> 8;                                        \
-            dG = (88 * u + 183 * v) >> 8;                               \
-            dB = (453 * u) >> 8;                                        \
-                                                                        \
-            r = y1 + dR;                                                \
-            CLAMP(r);                                                   \
-            g = y1 - dG;                                                \
-            CLAMP(g);                                                   \
-            b = y1 + dB;                                                \
-            CLAMP(b);                                                   \
-            mach64->overlay_dat[x] = (r << 16) | (g << 8) | b;          \
-                                                                        \
-            r = y2 + dR;                                                \
-            CLAMP(r);                                                   \
-            g = y2 - dG;                                                \
-            CLAMP(g);                                                   \
-            b = y2 + dB;                                                \
-            CLAMP(b);                                                   \
-            mach64->overlay_dat[x + 1] = (r << 16) | (g << 8) | b;      \
-        }                                                               \
-    } while (0)
-
-void
-mach64_overlay_draw(svga_t *svga, int displine)
-{
-    mach64_t *mach64 = (mach64_t *) svga->priv;
-    int       x;
-    int       h_acc = 0;
-    int       h_max = (mach64->scaler_height_width >> 16) & 0x3ff;
-    int       h_inc = mach64->overlay_scale_inc >> 16;
-    int       v_max = mach64->scaler_height_width & 0x3ff;
-    int       v_inc = mach64->overlay_scale_inc & 0xffff;
-    uint32_t *p;
-    uint8_t  *src   = &svga->vram[svga->overlay.addr];
-    int       old_y = mach64->overlay_v_acc;
-    int       y_diff;
-    int       video_key_fn    = mach64->overlay_key_cntl & 5;
-    int       graphics_key_fn = (mach64->overlay_key_cntl >> 4) & 5;
-    int       overlay_cmp_mix = (mach64->overlay_key_cntl >> 8) & 0xf;
-
-    p = &buffer32->line[displine][svga->x_add + mach64->svga.overlay_latch.x];
-
-    if (mach64->scaler_update) {
-        switch (mach64->scaler_format) {
-            case 0x3:
-                DECODE_ARGB1555();
-                break;
-            case 0x4:
-                DECODE_RGB565();
-                break;
-            case 0x6:
-                DECODE_ARGB8888();
-                break;
-            case 0xb:
-                DECODE_VYUY422();
-                break;
-            case 0xc:
-                DECODE_YVYU422();
-                break;
-
-            default:
-                mach64_log("Unknown Mach64 scaler format %x\n", mach64->scaler_format);
-                /*Fill buffer with something recognisably wrong*/
-                for (x = 0; x < mach64->svga.overlay_latch.cur_xsize; x++)
-                    mach64->overlay_dat[x] = 0xff00ff;
-                break;
-        }
-    }
-
-    if (overlay_cmp_mix == 2) {
-        for (x = 0; x < mach64->svga.overlay_latch.cur_xsize; x++) {
-            int h = h_acc >> 12;
-
-            p[x] = mach64->overlay_dat[h];
-
-            h_acc += h_inc;
-            if (h_acc > (h_max << 12))
-                h_acc = (h_max << 12);
-        }
-    } else {
-        for (x = 0; x < mach64->svga.overlay_latch.cur_xsize; x++) {
-            int h         = h_acc >> 12;
-            int gr_cmp    = 0;
-            int vid_cmp   = 0;
-            int use_video = 0;
-
-            switch (video_key_fn) {
-                case 0:
-                    vid_cmp = 0;
-                    break;
-                case 1:
-                    vid_cmp = 1;
-                    break;
-                case 4:
-                    vid_cmp = ((mach64->overlay_dat[h] ^ mach64->overlay_video_key_clr) & mach64->overlay_video_key_msk);
-                    break;
-                case 5:
-                    vid_cmp = !((mach64->overlay_dat[h] ^ mach64->overlay_video_key_clr) & mach64->overlay_video_key_msk);
-                    break;
-
-                default:
-                    break;
-            }
-            switch (graphics_key_fn) {
-                case 0:
-                    gr_cmp = 0;
-                    break;
-                case 1:
-                    gr_cmp = 1;
-                    break;
-                case 4:
-                    gr_cmp = (((p[x]) ^ mach64->overlay_graphics_key_clr) & mach64->overlay_graphics_key_msk & 0xffffff);
-                    break;
-                case 5:
-                    gr_cmp = !(((p[x]) ^ mach64->overlay_graphics_key_clr) & mach64->overlay_graphics_key_msk & 0xffffff);
-                    break;
-
-                default:
-                    break;
-            }
-            vid_cmp = vid_cmp ? -1 : 0;
-            gr_cmp  = gr_cmp ? -1 : 0;
-
-            switch (overlay_cmp_mix) {
-                case 0x0:
-                    use_video = gr_cmp;
-                    break;
-                case 0x1:
-                    use_video = 0;
-                    break;
-                case 0x2:
-                    use_video = ~0;
-                    break;
-                case 0x3:
-                    use_video = ~gr_cmp;
-                    break;
-                case 0x4:
-                    use_video = ~vid_cmp;
-                    break;
-                case 0x5:
-                    use_video = gr_cmp ^ vid_cmp;
-                    break;
-                case 0x6:
-                    use_video = ~gr_cmp ^ vid_cmp;
-                    break;
-                case 0x7:
-                    use_video = vid_cmp;
-                    break;
-                case 0x8:
-                    use_video = ~gr_cmp | ~vid_cmp;
-                    break;
-                case 0x9:
-                    use_video = gr_cmp | ~vid_cmp;
-                    break;
-                case 0xa:
-                    use_video = ~gr_cmp | vid_cmp;
-                    break;
-                case 0xb:
-                    use_video = gr_cmp | vid_cmp;
-                    break;
-                case 0xc:
-                    use_video = gr_cmp & vid_cmp;
-                    break;
-                case 0xd:
-                    use_video = ~gr_cmp & vid_cmp;
-                    break;
-                case 0xe:
-                    use_video = gr_cmp & ~vid_cmp;
-                    break;
-                case 0xf:
-                    use_video = ~gr_cmp & ~vid_cmp;
-                    break;
-
-                default:
-                    break;
-            }
-
-            if (use_video)
-                p[x] = mach64->overlay_dat[h];
-
-            h_acc += h_inc;
-            if (h_acc > (h_max << 12))
-                h_acc = (h_max << 12);
-        }
-    }
-
-    mach64->overlay_v_acc += v_inc;
-    if (mach64->overlay_v_acc > (v_max << 12))
-        mach64->overlay_v_acc = v_max << 12;
-
-    y_diff = (mach64->overlay_v_acc >> 12) - (old_y >> 12);
-
-    if (mach64->scaler_format == 6)
-        svga->overlay.addr += svga->overlay.pitch * 4 * y_diff;
-    else
-        svga->overlay.addr += svga->overlay.pitch * 2 * y_diff;
-
-    mach64->scaler_update = y_diff;
-}
-
-static void
-mach64_io_remove(mach64_t *mach64)
-{
-    uint16_t io_base = 0x02ec;
-
-    switch (mach64->io_base) {
-        default:
-        case 0:
-            io_base = 0x02ec;
-            break;
-        case 1:
-            io_base = 0x01cc;
-            break;
-        case 2:
-            io_base = 0x01c8;
-            break;
-        case 3:
-            fatal("Attempting to use the reserved value for I/O Base\n");
-            return;
-    }
-
-    io_removehandler(0x03c0, 0x0020, mach64_in, NULL, NULL, mach64_out, NULL, NULL, mach64);
-
-    for (uint8_t c = 0; c < 8; c++) {
-        io_removehandler((c * 0x1000) + 0x0000 + io_base, 0x0004, mach64_ext_inb, mach64_ext_inw, mach64_ext_inl, mach64_ext_outb, mach64_ext_outw, mach64_ext_outl, mach64);
-        io_removehandler((c * 0x1000) + 0x0400 + io_base, 0x0004, mach64_ext_inb, mach64_ext_inw, mach64_ext_inl, mach64_ext_outb, mach64_ext_outw, mach64_ext_outl, mach64);
-        io_removehandler((c * 0x1000) + 0x0800 + io_base, 0x0004, mach64_ext_inb, mach64_ext_inw, mach64_ext_inl, mach64_ext_outb, mach64_ext_outw, mach64_ext_outl, mach64);
-        io_removehandler((c * 0x1000) + 0x0c00 + io_base, 0x0004, mach64_ext_inb, mach64_ext_inw, mach64_ext_inl, mach64_ext_outb, mach64_ext_outw, mach64_ext_outl, mach64);
-    }
-
-    io_removehandler(0x01ce, 0x0002, mach64_in, NULL, NULL, mach64_out, NULL, NULL, mach64);
-
-    if (mach64->block_decoded_io && mach64->block_decoded_io < 0x10000)
-        io_removehandler(mach64->block_decoded_io, 0x0400, mach64_block_inb, mach64_block_inw, mach64_block_inl, mach64_block_outb, mach64_block_outw, mach64_block_outl, mach64);
-}
-
-static void
-mach64_io_set(mach64_t *mach64)
-{
-    uint16_t io_base = 0x02ec;
-
-    mach64_io_remove(mach64);
-
-    switch (mach64->io_base) {
-        default:
-        case 0:
-            io_base = 0x02ec;
-            break;
-        case 1:
-            io_base = 0x01cc;
-            break;
-        case 2:
-            io_base = 0x01c8;
-            break;
-        case 3:
-            fatal("Attempting to use the reserved value for I/O Base\n");
-            return;
-    }
-
-    io_sethandler(0x03c0, 0x0020, mach64_in, NULL, NULL, mach64_out, NULL, NULL, mach64);
-
-    if (!mach64->use_block_decoded_io) {
-        for (uint8_t c = 0; c < 8; c++) {
-            io_sethandler((c * 0x1000) + 0x0000 + io_base, 0x0004, mach64_ext_inb, mach64_ext_inw, mach64_ext_inl, mach64_ext_outb, mach64_ext_outw, mach64_ext_outl, mach64);
-            io_sethandler((c * 0x1000) + 0x0400 + io_base, 0x0004, mach64_ext_inb, mach64_ext_inw, mach64_ext_inl, mach64_ext_outb, mach64_ext_outw, mach64_ext_outl, mach64);
-            io_sethandler((c * 0x1000) + 0x0800 + io_base, 0x0004, mach64_ext_inb, mach64_ext_inw, mach64_ext_inl, mach64_ext_outb, mach64_ext_outw, mach64_ext_outl, mach64);
-            io_sethandler((c * 0x1000) + 0x0c00 + io_base, 0x0004, mach64_ext_inb, mach64_ext_inw, mach64_ext_inl, mach64_ext_outb, mach64_ext_outw, mach64_ext_outl, mach64);
-        }
-    }
-
-    io_sethandler(0x01ce, 0x0002, mach64_in, NULL, NULL, mach64_out, NULL, NULL, mach64);
-
-    if (mach64->use_block_decoded_io && mach64->block_decoded_io && mach64->block_decoded_io < 0x10000)
-        io_sethandler(mach64->block_decoded_io, 0x0400, mach64_block_inb, mach64_block_inw, mach64_block_inl, mach64_block_outb, mach64_block_outw, mach64_block_outl, mach64);
-}
-
-static uint8_t
-mach64_read_linear(uint32_t addr, void *priv)
-{
-    const svga_t *svga = (svga_t *) priv;
-
-    cycles -= svga->monitor->mon_video_timing_read_b;
-
-    addr &= svga->decode_mask;
-    if (addr >= svga->vram_max)
-        return 0xff;
-
-    return svga->vram[addr & svga->vram_mask];
-}
-
-static uint16_t
-mach64_readw_linear(uint32_t addr, void *priv)
-{
-    svga_t *svga = (svga_t *) priv;
-
-    cycles -= svga->monitor->mon_video_timing_read_w;
-
-    addr &= svga->decode_mask;
-    if (addr >= svga->vram_max)
-        return 0xffff;
-
-    return *(uint16_t *) &svga->vram[addr & svga->vram_mask];
-}
-
-static uint32_t
-mach64_readl_linear(uint32_t addr, void *priv)
-{
-    svga_t *svga = (svga_t *) priv;
-
-    cycles -= svga->monitor->mon_video_timing_read_l;
-
-    addr &= svga->decode_mask;
-    if (addr >= svga->vram_max)
-        return 0xffffffff;
-
-    return *(uint32_t *) &svga->vram[addr & svga->vram_mask];
-}
-
-static void
-mach64_write_linear(uint32_t addr, uint8_t val, void *priv)
-{
-    svga_t *svga = (svga_t *) priv;
-
-    cycles -= svga->monitor->mon_video_timing_write_b;
-
-    addr &= svga->decode_mask;
-    if (addr >= svga->vram_max)
-        return;
-    addr &= svga->vram_mask;
-    svga->changedvram[addr >> 12] = svga->monitor->mon_changeframecount;
-    svga->vram[addr]              = val;
-}
-
-static void
-mach64_writew_linear(uint32_t addr, uint16_t val, void *priv)
-{
-    svga_t *svga = (svga_t *) priv;
-
-    cycles -= svga->monitor->mon_video_timing_write_w;
-
-    addr &= svga->decode_mask;
-    if (addr >= svga->vram_max)
-        return;
-    addr &= svga->vram_mask;
-    svga->changedvram[addr >> 12]   = svga->monitor->mon_changeframecount;
-    *(uint16_t *) &svga->vram[addr] = val;
-}
-
-static void
-mach64_writel_linear(uint32_t addr, uint32_t val, void *priv)
-{
-    svga_t *svga = (svga_t *) priv;
-
-    cycles -= svga->monitor->mon_video_timing_write_l;
-
-    addr &= svga->decode_mask;
-    if (addr >= svga->vram_max)
-        return;
-    addr &= svga->vram_mask;
-    svga->changedvram[addr >> 12]   = svga->monitor->mon_changeframecount;
-    *(uint32_t *) &svga->vram[addr] = val;
-}
-
 uint8_t
 mach64_pci_read(UNUSED(int func), int addr, void *priv)
 {
@@ -4395,7 +4659,10 @@ mach64_pci_read(UNUSED(int func), int addr, void *priv)
         case 0x08: /*Revision ID*/
             if (mach64->type == MACH64_GX)
                 return 0;
-            return 0x40;
+            else if (mach64->type == MACH64_VT2)
+                return 0x40;
+            else /* RAGE */
+                return 0x50;
 
         case 0x09:
             return 0; /*Programming interface*/
@@ -4415,19 +4682,19 @@ mach64_pci_read(UNUSED(int func), int addr, void *priv)
             return mach64->linear_base >> 24;
 
         case 0x14:
-            if (mach64->type == MACH64_VT2)
+            if (mach64->type == MACH64_VT2 || mach64->type == MACH64_RAGE)
                 return 0x01; /*Block decoded IO address*/
             return 0x00;
         case 0x15:
-            if (mach64->type == MACH64_VT2)
+            if (mach64->type == MACH64_VT2 || mach64->type == MACH64_RAGE)
                 return mach64->block_decoded_io >> 8;
             return 0x00;
         case 0x16:
-            if (mach64->type == MACH64_VT2)
+            if (mach64->type == MACH64_VT2 || mach64->type == MACH64_RAGE)
                 return mach64->block_decoded_io >> 16;
             return 0x00;
         case 0x17:
-            if (mach64->type == MACH64_VT2)
+            if (mach64->type == MACH64_VT2 || mach64->type == MACH64_RAGE)
                 return mach64->block_decoded_io >> 24;
             return 0x00;
 
@@ -4470,7 +4737,7 @@ mach64_pci_write(UNUSED(int func), int addr, uint8_t val, void *priv)
             break;
 
         case 0x12:
-            if (mach64->type == MACH64_VT2)
+            if (mach64->type == MACH64_VT2 || mach64->type == MACH64_RAGE)
                 val = 0;
             mach64->linear_base = (mach64->linear_base & 0xff000000) | ((val & 0x80) << 16);
             mach64_updatemapping(mach64);
@@ -4481,7 +4748,7 @@ mach64_pci_write(UNUSED(int func), int addr, uint8_t val, void *priv)
             break;
 
         case 0x15:
-            if (mach64->type == MACH64_VT2) {
+            if (mach64->type == MACH64_VT2 || mach64->type == MACH64_RAGE) {
                 if (mach64->pci_regs[PCI_REG_COMMAND] & PCI_COMMAND_IO)
                     mach64_io_remove(mach64);
                 mach64->block_decoded_io = (mach64->block_decoded_io & 0xffff0000) | ((val & 0xfc) << 8);
@@ -4490,7 +4757,7 @@ mach64_pci_write(UNUSED(int func), int addr, uint8_t val, void *priv)
             }
             break;
         case 0x16:
-            if (mach64->type == MACH64_VT2) {
+            if (mach64->type == MACH64_VT2 || mach64->type == MACH64_RAGE) {
                 if (mach64->pci_regs[PCI_REG_COMMAND] & PCI_COMMAND_IO)
                     mach64_io_remove(mach64);
                 mach64->block_decoded_io = (mach64->block_decoded_io & 0xff00fc00) | (val << 16);
@@ -4499,7 +4766,7 @@ mach64_pci_write(UNUSED(int func), int addr, uint8_t val, void *priv)
             }
             break;
         case 0x17:
-            if (mach64->type == MACH64_VT2) {
+            if (mach64->type == MACH64_VT2 || mach64->type == MACH64_RAGE) {
                 if (mach64->pci_regs[PCI_REG_COMMAND] & PCI_COMMAND_IO)
                     mach64_io_remove(mach64);
                 mach64->block_decoded_io = (mach64->block_decoded_io & 0x00fffc00) | (val << 24);
@@ -4515,7 +4782,7 @@ mach64_pci_write(UNUSED(int func), int addr, uint8_t val, void *priv)
             if (mach64->pci_regs[0x30] & 0x01) {
                 uint32_t biosaddr = (mach64->pci_regs[0x32] << 16) | (mach64->pci_regs[0x33] << 24);
                 mach64_log("Mach64 bios_rom enabled at %08x\n", biosaddr);
-                mem_mapping_set_addr(&mach64->bios_rom.mapping, biosaddr, 0x8000);
+                mem_mapping_set_addr(&mach64->bios_rom.mapping, biosaddr, mach64->bios_rom.mapping.size);
             } else {
                 mach64_log("Mach64 bios_rom disabled\n");
                 mem_mapping_disable(&mach64->bios_rom.mapping);
@@ -4530,7 +4797,7 @@ mach64_pci_write(UNUSED(int func), int addr, uint8_t val, void *priv)
             if (mach64->pci_regs[PCI_REG_COMMAND] & PCI_COMMAND_IO)
                 mach64_io_remove(mach64);
             mach64->io_base = val & 0x03;
-            if (mach64->type == MACH64_VT2)
+            if (mach64->type == MACH64_VT2 || mach64->type == MACH64_RAGE)
                 mach64->use_block_decoded_io = val & 0x04;
             if (mach64->pci_regs[PCI_REG_COMMAND] & PCI_COMMAND_IO)
                 mach64_io_set(mach64);
@@ -4656,6 +4923,36 @@ mach64vt2_init(const device_t *info)
     return mach64;
 }
 
+/* ATI Rage initialization */
+static void *
+mach64rage_init(const device_t *info)
+{
+    mach64_t *mach64 = mach64_common_init(info);
+    svga_t   *svga   = &mach64->svga;
+
+    video_inform(VIDEO_FLAG_TYPE_SPECIAL, &timing_mach64_pci);
+
+    mach64->type                 = MACH64_RAGE;
+    mach64->pci                  = 1;
+    mach64->pci_id               = 0x4754; /* 'GT' */
+    mach64->config_chip_id       = 0x9a004754; /* Rage GT */
+    mach64->dac_cntl             = 1 << 16; /* Internal 24-bit DAC */
+    mach64->config_stat0         = 4;
+    mach64->use_block_decoded_io = 4;
+
+    /* Load ATI RAGE EEPROM */
+    ati_eeprom_load(&mach64->eeprom, "mach64rage.nvr", 1);
+
+    /* Initialize BIOS ROM */
+    rom_init(&mach64->bios_rom, BIOS_RAGE_PATH, 0xc0000, 0x10000, 0xffff, 0, MEM_MAPPING_EXTERNAL);
+    mem_mapping_disable(&mach64->bios_rom.mapping);
+
+    /* Set up vertical blank interrupt handling */
+    svga->vblank_start = mach64_vblank_start;
+
+    return mach64;
+}
+
 int
 mach64gx_available(void)
 {
@@ -4675,6 +4972,11 @@ int
 mach64vt2_available(void)
 {
     return rom_present(BIOS_ROMVT2_PATH);
+}
+int
+mach64rage_available(void)
+{
+    return rom_present(BIOS_RAGE_PATH);
 }
 
 void
@@ -4751,6 +5053,26 @@ static const device_config_t mach64vt2_config[] = {
     },
     { .name = "", .description = "", .type = CONFIG_END }
 };
+
+static const device_config_t mach64rage_config[] = {
+    {
+        .name           = "memory",
+        .description    = "Memory size",
+        .type           = CONFIG_SELECTION,
+        .default_string = NULL,
+        .default_int    = 4,
+        .file_filter    = NULL,
+        .spinner        = { 0 },
+        .selection      = {
+            { .description = "2 MB", .value = 2 },
+            { .description = "4 MB", .value = 4 },
+            { .description = "8 MB", .value = 8 },
+            { .description = ""                 }
+        },
+        .bios           = { { 0 } }
+    },
+    { .name = "", .description = "", .type = CONFIG_END }
+};
 // clang-format on
 
 const device_t mach64gx_isa_device = {
@@ -4807,4 +5129,18 @@ const device_t mach64vt2_device = {
     .speed_changed = mach64_speed_changed,
     .force_redraw  = mach64_force_redraw,
     .config        = mach64vt2_config
+};
+
+const device_t mach64rage_device = {
+    .name          = "ATI Rage",
+    .internal_name = "mach64rage",
+    .flags         = DEVICE_PCI,
+    .local         = 0,
+    .init          = mach64rage_init,
+    .close         = mach64_close,
+    .reset         = NULL,
+    .available     = mach64rage_available,
+    .speed_changed = mach64_speed_changed,
+    .force_redraw  = mach64_force_redraw,
+    .config        = mach64rage_config
 };

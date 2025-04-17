@@ -4934,20 +4934,17 @@ mach64rage_init(const device_t *info)
 
     mach64->type                 = MACH64_RAGE;
     mach64->pci                  = 1;
-    mach64->pci_id               = 0x4754; /* 'GT' */
-    mach64->config_chip_id       = 0x9a004754; /* Rage GT */
+    mach64->pci_id               = 0x4754;
+    mach64->config_chip_id       = 0x9a004754;
     mach64->dac_cntl             = 1 << 16; /* Internal 24-bit DAC */
     mach64->config_stat0         = 4;
     mach64->use_block_decoded_io = 4;
 
-    /* Load ATI RAGE EEPROM */
     ati_eeprom_load(&mach64->eeprom, "mach64rage.nvr", 1);
 
-    /* Initialize BIOS ROM */
     rom_init(&mach64->bios_rom, BIOS_RAGE_PATH, 0xc0000, 0x10000, 0xffff, 0, MEM_MAPPING_EXTERNAL);
     mem_mapping_disable(&mach64->bios_rom.mapping);
 
-    /* Set up vertical blank interrupt handling */
     svga->vblank_start = mach64_vblank_start;
 
     return mach64;

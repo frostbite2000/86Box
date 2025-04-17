@@ -585,6 +585,13 @@ void     mach64_ext_writeb(uint32_t addr, uint8_t val, void *priv);
 void     mach64_ext_writew(uint32_t addr, uint16_t val, void *priv);
 void     mach64_ext_writel(uint32_t addr, uint32_t val, void *priv);
 
+static uint8_t mach64_ext_inb(uint16_t addr, void *priv);
+static uint16_t mach64_ext_inw(uint16_t addr, void *priv);
+static uint32_t mach64_ext_inl(uint16_t addr, void *priv);
+static void mach64_ext_outb(uint16_t addr, uint8_t val, void *priv);
+static void mach64_ext_outw(uint16_t addr, uint16_t val, void *priv);
+static void mach64_ext_outl(uint16_t addr, uint32_t val, void *priv);
+
 static uint8_t mach64_block_readb(uint32_t addr, void *priv);
 static uint16_t mach64_block_readw(uint32_t addr, void *priv);
 static uint32_t mach64_block_readl(uint32_t addr, void *priv);

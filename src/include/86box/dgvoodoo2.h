@@ -62,10 +62,11 @@ extern void dgvoodoo2_close(void);
 extern void dgvoodoo2_save(void);
 extern void dgvoodoo2_load_config(void);
 
-extern void dgvoodoo2_module_init(void);
-
 /* Get device information */
 extern const char* dgvoodoo2_get_card_name(int vendor, int model);
+
+/* Module initialization */
+extern void dgvoodoo2_module_init(void);
 
 #ifdef __cplusplus
 }

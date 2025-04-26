@@ -33,6 +33,7 @@
 #include <stdatomic.h>
 #include <unistd.h>
 #include <math.h>
+#include <86box/dgvoodoo2.h>
 #include <86box/device/pci_dgvoodoo.h>
 
 #ifndef _WIN32
@@ -848,7 +849,7 @@ usage:
     path_slash(usr_path);
     path_slash(rom_path);
 
-    dgvoodoo2_load_config();
+    dgvoodoo2_module_init();
     
     // Register DgVoodoo2 devices if enabled
     if (dgvoodoo2_enabled) {

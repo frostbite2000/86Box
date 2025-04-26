@@ -18,6 +18,8 @@
 #ifndef DEVICE_PCI_DGVOODOO_H
 #define DEVICE_PCI_DGVOODOO_H
 
+#include <86box/device.h>
+
 /* DgVoodoo2 PCI/AGP device */
 extern const device_t dgvoodoo2_device;
 

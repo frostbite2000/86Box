@@ -27,6 +27,7 @@
 #include <86box/path.h>
 #include <86box/config.h>
 #include <86box/dgvoodoo2.h>
+#include <86box/device/pci_dgvoodoo.h>
 
 /* Global variables for DgVoodoo2 configuration */
 int dgvoodoo2_enabled = 0;
@@ -184,4 +185,20 @@ dgvoodoo2_close(void)
 {
     /* Clean up DLLs */
     dgvoodoo2_cleanup_dll();
+}
+
+/*
+ * Unified DgVoodoo2 module initialization
+ */
+void
+dgvoodoo2_module_init(void)
+{
+    /* Load DgVoodoo2 configuration */
+    dgvoodoo2_load_config();
+    
+    /* Initialize device specifics */
+    if (dgvoodoo2_enabled) {
+        dgvoodoo2_device_init();
+        dgvoodoo2_device_register();
+    }
 }

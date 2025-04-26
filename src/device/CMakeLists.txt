@@ -56,6 +56,7 @@ add_library(dev OBJECT
     smbus_piix4.c
     smbus_sis5595.c
     unittester.c
+    pci_dgvoodoo2.c
 )
 
 if(NOT CMAKE_CXX_COMPILER_ID MATCHES "Clang" AND NOT MSVC)

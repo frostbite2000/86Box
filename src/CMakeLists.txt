@@ -40,6 +40,7 @@ add_executable(86Box
     mca.c
     usb.c
     device.c
+    dgvoodoo2.c
     nvr.c
     nvr_at.c
     nvr_ps2.c

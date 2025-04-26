@@ -60,6 +60,29 @@ SettingsDisplay::save()
     ibm8514_standalone_enabled = ui->checkBox8514->isChecked() ? 1 : 0;
     xga_standalone_enabled     = ui->checkBoxXga->isChecked() ? 1 : 0;
     da2_standalone_enabled = ui->checkBoxDa2->isChecked() ? 1 : 0;
+
+    bool was_enabled = dgvoodoo2_enabled;
+    dgvoodoo2_enabled = ui->checkBoxDgVoodoo2->isChecked() ? 1 : 0;
+    dgvoodoo2_save();
+    
+    // If DgVoodoo2 was enabled or disabled, inform the user about the need to restart
+    if (was_enabled != dgvoodoo2_enabled) {
+        QMessageBox::information(this, tr("DgVoodoo2 Configuration"),
+                               tr("You have changed the DgVoodoo2 wrapper configuration. "
+                                  "The DgVoodoo2 video cards will be available in the Video device dropdown after you restart the emulator."));
+    }
+}
+
+void
+SettingsDisplay::on_checkBoxDgVoodoo2_stateChanged(int state)
+{
+    ui->pushButtonConfigureDgVoodoo2->setEnabled(state == Qt::Checked);
+    
+    if (state == Qt::Checked) {
+        QMessageBox::information(this, tr("DgVoodoo2 Integration"),
+                              tr("You've enabled the DgVoodoo2 integration. This will make DgVoodoo2-based graphics cards available in the Video device dropdown.\n\n"
+                                 "After configuring DgVoodoo2 settings and restarting the emulator, please select the desired DgVoodoo2 card from the video device dropdown to use it."));
+    }
 }
 
 void

@@ -74,6 +74,13 @@ DgVoodoo2Dialog::DgVoodoo2Dialog(QWidget *parent)
     }
     
     layout()->setSizeConstraint(QLayout::SetFixedSize);
+    
+    // Connect browse button signal
+    connect(ui->pushButtonBrowse, &QPushButton::clicked, this, &DgVoodoo2Dialog::onBrowseClicked);
+    
+    // Connect GPU vendor combobox to update model list
+    connect(ui->comboBoxGPUVendor, QOverload<int>::of(&QComboBox::currentIndexChanged),
+            this, &DgVoodoo2Dialog::onGPUVendorChanged);
 }
 
 DgVoodoo2Dialog::~DgVoodoo2Dialog()
@@ -108,12 +115,12 @@ void DgVoodoo2Dialog::populateGPUModels(int vendorIndex)
     }
 }
 
-void DgVoodoo2Dialog::on_comboBoxGPUVendor_currentIndexChanged(int index)
+void DgVoodoo2Dialog::onGPUVendorChanged(int index)
 {
     populateGPUModels(ui->comboBoxGPUVendor->currentData().toInt());
 }
 
-void DgVoodoo2Dialog::on_pushButtonBrowse_clicked()
+void DgVoodoo2Dialog::onBrowseClicked()
 {
     QString dir = QFileDialog::getExistingDirectory(this, tr("Select DgVoodoo2 Directory"),
                                                    ui->lineEditPath->text(),
@@ -148,7 +155,7 @@ void DgVoodoo2Dialog::on_pushButtonBrowse_clicked()
     }
 }
 
-void DgVoodoo2Dialog::on_pushButtonOK_clicked()
+void DgVoodoo2Dialog::accept()
 {
     // Validate path if DgVoodoo2 is enabled
     if (ui->lineEditPath->text().isEmpty()) {
@@ -158,12 +165,7 @@ void DgVoodoo2Dialog::on_pushButtonOK_clicked()
     }
     
     save();
-    accept();
-}
-
-void DgVoodoo2Dialog::on_pushButtonCancel_clicked()
-{
-    reject();
+    QDialog::accept();
 }
 
 void DgVoodoo2Dialog::save()

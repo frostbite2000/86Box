@@ -204,6 +204,8 @@ add_library(ui STATIC
     qt_iconindicators.cpp
 
     qt_dgvoodoo2dialog.cpp
+    qt_dgvoodoo2dialog.hpp
+    qt_dgvoodoo2dialog.ui
 )
 
 if(RTMIDI)

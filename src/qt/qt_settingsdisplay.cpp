@@ -15,6 +15,7 @@
  *          Copyright 2021 Joakim L. Gilje
  */
 #include "qt_settingsdisplay.hpp"
+#include "qt_dgvoodoo2dialog.hpp"
 #include "ui_qt_settingsdisplay.h"
 
 #include <QDebug>
@@ -49,6 +50,13 @@ SettingsDisplay::~SettingsDisplay()
 }
 
 void
+SettingsDisplay::on_pushButtonConfigureDgVoodoo2_clicked()
+{
+    DgVoodoo2Dialog dlg(this);
+    dlg.exec();
+}
+
+void
 SettingsDisplay::save()
 {
     gfxcard[0]                 = ui->comboBoxVideo->currentData().toInt();
@@ -61,6 +69,7 @@ SettingsDisplay::save()
     xga_standalone_enabled     = ui->checkBoxXga->isChecked() ? 1 : 0;
     da2_standalone_enabled = ui->checkBoxDa2->isChecked() ? 1 : 0;
 
+    // Save DgVoodoo2 configuration
     bool was_enabled = dgvoodoo2_enabled;
     dgvoodoo2_enabled = ui->checkBoxDgVoodoo2->isChecked() ? 1 : 0;
     dgvoodoo2_save();
